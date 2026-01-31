@@ -8,18 +8,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Run
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install requests pandas
-          python collector.py
-      - name: Save
+      - name: Run collector
+        run: python collector.py
+      - name: Save data
         run: |
           git config --global user.name "Bot"
           git config --global user.email "bot@example.com"
           git add wait_times_history.csv
-          git commit -m "update" || exit 0
+          git commit -m "update data" || exit 0
           git push
