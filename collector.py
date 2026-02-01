@@ -5,33 +5,37 @@ import os
 
 def collect():
     try:
+        # ディズニーシーのデータを取得
         url = "https://disney-api.0505keitan.com/exec?park=tds"
-        res = requests.get(url)
+        res = requests.get(url, timeout=10)
         data = res.json()
         
+        # 現在の時刻を取得
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
         timestamp = now.strftime('%Y-%m-%d %H:%M')
         
+        # 必要な情報だけリストにする
         new_records = []
         for item in data:
-            new_records.append({
-                "timestamp": timestamp,
-                "name": item.get('name', 'Unknown'),
-                "wait_time": item.get('standbyTime', 0)
-            })
+            name = item.get('name', 'Unknown')
+            wait = item.get('standbyTime')
+            if wait is None: wait = 0
+            new_records.append([timestamp, name, wait])
         
+        # CSVファイルに追記する（ここを一番確実な方法に変更！）
+        file_path = 'wait_times_history.csv'
         new_df = pd.DataFrame(new_records)
         
-        # 実行しているディレクトリに確実に保存する
-        file_path = os.path.join(os.getcwd(), 'wait_times_history.csv')
-        
+        # ファイルが存在すれば追記、なければ新規作成
         if os.path.exists(file_path):
             new_df.to_csv(file_path, mode='a', header=False, index=False)
         else:
-            new_df.to_csv(file_path, index=False)
-        print(f"Saved to {file_path}")
+            new_df.to_csv(file_path, header=['timestamp', 'name', 'wait_time'], index=False)
+            
+        print(f"成功！ {len(new_records)}件のデータを追記しました。")
+        
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"エラーが発生しました: {e}")
 
 if __name__ == "__main__":
     collect()
