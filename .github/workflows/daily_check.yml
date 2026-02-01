@@ -6,10 +6,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: # ここで権限を明示的に追加
-      contents: write
+    permissions:
+      contents: write # ここで改めて書き込みを宣言
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: true # これを追加
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -23,5 +25,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add wait_times_history.csv
-          git commit -m "Add Disney data" || echo "No changes to commit"
+          git commit -m "update wait times" || exit 0
           git push origin main
